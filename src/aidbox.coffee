@@ -1,7 +1,8 @@
 URI = require('URIjs')
 mod = angular.module('ngAidbox', ['ng'])
 
-mod.service '$aidbox', ($http, $cookies, $window)->
+
+mod.service '$aidbox', ($http, $cookies, $window, $q)->
   config = {
     client_id    : 'site'
     grant_type   : 'implicit'
@@ -11,6 +12,7 @@ mod.service '$aidbox', ($http, $cookies, $window)->
 
   box_url = null
   query = URI($window.location.search).search(true)
+
 
   loginUrl = ()->
     URI(box_url)
@@ -49,11 +51,8 @@ mod.service '$aidbox', ($http, $cookies, $window)->
         $window.close()
 
   @signin= (userCb)->
-    if access_token()
-      console.log 'You are signed in'
-    else
-      $window.open(loginUrl(), "SignIn to you Box", "width=780,height=410,toolbar=0,scrollbars=0,status=0,resizable=0,left=100,top=100")
-      true
+    $window.open(loginUrl(), "SignIn to you Box", "width=780,height=410,toolbar=0,scrollbars=0,status=0,resizable=0,left=100,top=100")
+    true
 
   @signout= ()->
     if access_token()
@@ -71,6 +70,34 @@ mod.service '$aidbox', ($http, $cookies, $window)->
     $http.get box_url+'/user', { params : {access_token : access_token() }}
       .success (data)->
         callback data if callback
+
+  http = (opts)->
+    opts.params ||= {}
+    angular.extend(opts.params, {access_token: access_token()})
+    args =
+      url: "#{box_url}#{opts.url}"
+      params: opts.params
+      method: opts.method || 'GET'
+      data: opts.data
+    $http(args)
+
+  @http = http
+
+  @fhir =
+    valueSet:
+      expand: (id, filter)->
+        deferred = $q.defer()
+        http(
+          url: "/fhir/ValueSet/#{id}/$expand"
+          method: 'GET'
+          params: {filter: filter}
+        ).success (data)->
+          deferred.resolve(data.expansion.contains)
+        .error (err)->
+          deferred.reject(err)
+
+        deferred.promise
+
   @
 
 module.exports = mod
