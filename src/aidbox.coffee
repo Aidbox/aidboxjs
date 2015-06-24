@@ -1,6 +1,11 @@
 URI = require('URIjs')
 mod = angular.module('ngAidbox', ['ng'])
 
+addMinutes = (d, min)->
+  d && d.setMinutes(d.getMinutes() + min) && d
+
+addSeconds = (d, x)->
+  d && d.setSeconds(d.getSeconds() + x) && d
 
 mod.service '$aidbox', ($http, $cookies, $window, $q)->
   config = {
@@ -25,12 +30,13 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
 
   # Clear all user data
   out = ()->
+    console.log('logout')
     $cookies.remove 'ab_'+ config.client_id
-    # Clear some other data
+    config.onSignOut() if config.onSignOut
 
   @onAccessToken = (query)=>
     @user (x)->
-      config.onUser(x) if config.onUser
+      config.onSignIn(x) if config.onSignIn
 
   $window.onAccessToken = @onAccessToken
 
@@ -42,11 +48,16 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
       config[k] = v
     # Remove AT from uri and close modal window
     if access_token()
-      console.log('access_token', access_token())
       @onAccessToken()
     if query.access_token
-      $cookies.put 'ab_'+config.client_id, query.access_token
+      cookie_name = "ab_#{config.client_id}"
+      expires_at = query.expires_at
+      expires_at = expires_at && decodeURIComponent(expires_at)
+      expires_at = (expires_at && addMinutes(new Date(expires_at), -1)) or addMinutes(new Date(), 5)
+      $cookies.put(cookie_name, query.access_token, expires: expires_at)
+
       $window.opener.onAccessToken(query)
+
       if $window.opener
         $window.close()
 
@@ -54,32 +65,33 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
     $window.open(loginUrl(), "SignIn to you Box", "width=780,height=410,toolbar=0,scrollbars=0,status=0,resizable=0,left=100,top=100")
     true
 
-  @signout= ()->
-    if access_token()
-      $http.get box_url+'/signout', { params : {access_token : access_token() }}
-        .success (data)->
-          out()
-          console.log "You are now logged out"
-        .error (err)->
-          out()
-          console.log "Wrong access_token", err
-    else
-      console.log "You are not logged"
-
-  @user = (callback)->
-    $http.get box_url+'/user', { params : {access_token : access_token() }}
-      .success (data)->
-        callback data if callback
-
   http = (opts)->
+    token = access_token()
+    unless token
+      out()
+      mock =
+        success: ()-> mock
+        error: (cb)-> cb("session expired", 403); mock
+      return mock
+
     opts.params ||= {}
     angular.extend(opts.params, {access_token: access_token()})
+    data = opts.data && JSON.stringify(opts.data)
     args =
       url: "#{box_url}#{opts.url}"
       params: opts.params
       method: opts.method || 'GET'
-      data: opts.data
-    $http(args)
+      data: data
+    $http(args).error  (data, st)->
+      out() if st == 403
+
+  @signout= ()->
+    http(url: '/signout').success (data)-> out()
+
+  @user = (callback)->
+    http(url: '/user')
+      .success (data)->
+        callback data if callback
 
   @http = http
 
