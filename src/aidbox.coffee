@@ -18,7 +18,6 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
   box_url = null
   query = URI($window.location.search).search(true)
 
-
   loginUrl = ()->
     URI(box_url)
       .directory '/oauth/token'
@@ -30,7 +29,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
 
   # Clear all user data
   out = ()->
-    console.log('logout')
+    console.log('signout')
     $cookies.remove 'ab_'+ config.client_id
     config.onSignOut() if config.onSignOut
 
