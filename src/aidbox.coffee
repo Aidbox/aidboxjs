@@ -16,6 +16,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
   }
 
   box_url = null
+  flow = 'popup'
   query = URI($window.location.search).search(true)
 
   loginUrl = ()->
@@ -27,27 +28,39 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
   access_token= ()->
     $cookies.get('ab_'+config.client_id)
 
+  user_state = (state, user)->
+    config.onUser(state, user) if config.onUser
+    switch state
+      when 'signin'
+        config.onSignIn(user) if config.onSignIn
+      when 'signout'
+        config.onSignOut() if config.onSignOut
+      when 'anonimous'
+        config.onAnonimous() if config.onAnonimous
+
   # Clear all user data
   out = ()->
     console.log('signout')
     $cookies.remove 'ab_'+ config.client_id
-    config.onSignOut() if config.onSignOut
+    user_state('signout', null)
 
   @onAccessToken = (query)=>
     @user (x)->
-      config.onSignIn(x) if config.onSignIn
+      user_state('signin', x)
 
   $window.onAccessToken = @onAccessToken
 
   # Init client_id  box_url and other
   @init = (param)->
     box_url = param.box
+    flow = param.flow || 'popup' 
     delete param.box
     for k,v of param
       config[k] = v
     # Remove AT from uri and close modal window
     if access_token()
       @onAccessToken()
+      return
     if query.access_token
       cookie_name = "ab_#{config.client_id}"
       expires_at = query.expires_at
@@ -55,14 +68,25 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
       expires_at = (expires_at && addMinutes(new Date(expires_at), -1)) or addMinutes(new Date(), 5)
       $cookies.put(cookie_name, query.access_token, expires: expires_at)
 
-      $window.opener.onAccessToken(query)
+      if flow == 'popup'
+        $window.opener.onAccessToken(query)
+      else
+        @onAccessToken(query)
+        if $window.history.replaceState
+          console.log('replaceState')
+          $window.history.replaceState( {}, "", $window.location.toString().replace($window.location.search, ""))
 
-      if $window.opener
+      if flow == 'pupup' && $window.opener
         $window.close()
+    else
+      user_state('anonimous')
 
   @signin= (userCb)->
-    $window.open(loginUrl(), "SignIn to you Box", "width=780,height=410,toolbar=0,scrollbars=0,status=0,resizable=0,left=100,top=100")
-    true
+    if flow == 'redirect'
+      $window.location.href = loginUrl()
+    else
+      $window.open(loginUrl(), "SignIn to you Box", "width=780,height=410,toolbar=0,scrollbars=0,status=0,resizable=0,left=100,top=100")
+      true
 
   http = (opts)->
     token = access_token()
