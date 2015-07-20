@@ -52,16 +52,9 @@ mk_signin= ($window, config)->
 
 mk_http =($http, config, access_token, out)->
   (opts)->
-    token = access_token()
-    unless token
-      out()
-      mock =
-        success: ()-> mock
-        error: (cb)-> cb("session expired", 403); mock
-      return mock
-
     opts.params ||= {}
-    angular.extend(opts.params, {access_token: access_token()})
+    token = access_token()
+    opts.params.access_token = token if token
     data = opts.data && JSON.stringify(opts.data)
     args =
       url: "#{config.box}#{opts.url}"
