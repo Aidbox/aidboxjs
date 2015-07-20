@@ -140,10 +140,11 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
       @onSession()
       return
     else
-      user_state(config, 'anonimous')
+      user_state(config, 'anonymous')
       return
 
   http = mk_http($http, config, access_token, out)
+  @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
   @signout= -> http(url: '/signout').success (data)-> out()
