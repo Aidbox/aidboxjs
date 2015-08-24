@@ -73,7 +73,9 @@ mk_http =($http, config, access_token, out)->
       method: opts.method || 'GET'
       data: data
     $http(args).error  (data, st)->
-      out() if st == 403
+      if st == 403
+        $window.location.href = loginUrl(config)
+        #out()
 
 mk_fhir = (http, $q)->
   valueSet:
@@ -119,7 +121,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
     redirect_uri : $window.location
   }
 
-  access_token= -> read_access_token($cookies, config)
+  access_token= -> read_access_token($cookies, config) || window.location.href = loginUrl(config)
 
   out = ->
     drop_access_token($cookies, config)
