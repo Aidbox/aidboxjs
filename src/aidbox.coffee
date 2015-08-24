@@ -86,8 +86,8 @@ user_state = (config, state, user)->
       config.onSignIn(user) if config.onSignIn
     when 'signout'
       config.onSignOut() if config.onSignOut
-    when 'anonimous'
-      config.onAnonimous() if config.onAnonimous
+    when 'anonymous'
+      config.onAnonymous() if config.onAnonymous
 
 callHandler = ($window, config, obj, cb, args...)=>
   if config.flow == 'popup' && $window.opener
