@@ -20,8 +20,19 @@ merge = (targ, from)->
     targ[k] = v
   targ
 
+OAUTH_KEYS = [
+  'client_id'
+  'grant_type'
+  'scope'
+  'redirect_uri'
+  'lang'
+]
+
 loginUrl = (config)->
-  URI(config.box).directory('/oauth/token').setQuery(config)
+  opts = {}
+  for k,v of config
+    opts[k] = v if OAUTH_KEYS.indexOf(k) > -1
+  URI(config.box).directory('/oauth/token').setQuery(opts)
 
 store_access_token = ($cookies, config, query)->
   cookie_name = "ab_#{config.client_id}"
