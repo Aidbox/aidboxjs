@@ -121,7 +121,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
     redirect_uri : $window.location
   }
 
-  access_token= -> read_access_token($cookies, config) || window.location.href = loginUrl(config)
+  access_token= -> read_access_token($cookies, config)
 
   out = ->
     drop_access_token($cookies, config)
