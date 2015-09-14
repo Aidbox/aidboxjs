@@ -61,7 +61,7 @@ mk_signin= ($window, config)->
       $window.open(loginUrl(config), "SignIn to you Box", window_opts)
       true
 
-mk_http =($http, config, access_token, out)->
+mk_http =($http, config, access_token, out, $window)->
   (opts)->
     opts.params ||= {}
     token = access_token()
@@ -156,7 +156,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
       user_state(config, 'anonymous')
       return
 
-  http = mk_http($http, config, access_token, out)
+  http = mk_http($http, config, access_token, out, $window)
   @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
