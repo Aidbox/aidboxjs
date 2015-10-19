@@ -63,9 +63,8 @@ mk_signin= ($window, config)->
       $window.open(loginUrl(config), "SignIn to you Box", window_opts)
       true
 
-mk_http =($http, config, access_token, out, $q)->
+mk_http =($http, config, access_token, out, $q, $window)->
   (opts)->
-    console.log '1111'
     deferred = $q.defer()
     opts.params ||= {}
     access_token().then (token)->
@@ -82,7 +81,7 @@ mk_http =($http, config, access_token, out, $q)->
         .error (data, st)->
           if st == 403
             out()
-            window.location.href = loginUrl(config)
+            $window.location.href = loginUrl(config)
       deferred.promise
 
 mk_fhir = (http, $q)->
@@ -193,7 +192,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
         user_state(config, 'anonymous')
         return
 
-  http = mk_http($http, config, access_token, out, $q)
+  http = mk_http($http, config, access_token, out, $q,$window)
   @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
