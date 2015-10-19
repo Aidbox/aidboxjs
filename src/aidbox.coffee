@@ -40,11 +40,13 @@ store_access_token = ($cookies, config, query)->
   expires_at = expires_at && decodeURIComponent(expires_at)
   expires_at = (expires_at && addMinutes(new Date(expires_at), -1)) or addMinutes(new Date(), 5)
   $cookies.put(cookie_name, query.access_token, expires: expires_at)
+  $cookies.put('refresh_token', query.refresh_token)
 
-read_access_token = ($cookies, config)->
-  $cookies.get('ab_'+config.client_id)
+
 drop_access_token = ($cookies, config)->
   $cookies.remove 'ab_'+ config.client_id
+drop_refresh_token = ($cookies, config)->
+  $cookies.remove 'refresh_token'
 
 decode_query = (query)->
   res = {}
@@ -61,21 +63,27 @@ mk_signin= ($window, config)->
       $window.open(loginUrl(config), "SignIn to you Box", window_opts)
       true
 
-mk_http =($http, config, access_token, out)->
+mk_http =($http, config, access_token, out, $q)->
   (opts)->
+    console.log '1111'
+    deferred = $q.defer()
     opts.params ||= {}
-    token = access_token()
-    opts.params.access_token = token if token
-    data = opts.data && JSON.stringify(opts.data)
-    args =
-      url: "#{config.box}#{opts.url}"
-      params: opts.params
-      method: opts.method || 'GET'
-      data: data
-    $http(args).error  (data, st)->
-      if st == 403
-        $window.location.href = loginUrl(config)
-        #out()
+    access_token().then (token)->
+      opts.params.access_token = token if token
+      data = opts.data && JSON.stringify(opts.data)
+      args =
+        url: "#{config.box}#{opts.url}"
+        params: opts.params
+        method: opts.method || 'GET'
+        data: data
+      $http(args)
+        .success (data)->
+          deferred.resolve data
+        .error (data, st)->
+          if st == 403
+            out()
+            window.location.href = loginUrl(config)
+      deferred.promise
 
 mk_fhir = (http, $q)->
   valueSet:
@@ -121,10 +129,37 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
     redirect_uri : $window.location
   }
 
-  access_token= -> read_access_token($cookies, config)
+  update_access_token = (rt, config)->
+    deferred = $q.defer()
+    $http(
+        url: "#{config.box}/oauth/refresh"
+        method: 'POST'
+        params: {refresh_token: rt}
+      ).success (data)->
+        deferred.resolve(data)
+      .error (err)->
+        deferred.reject(err)
+    deferred.promise
+
+  read_access_token = (config)->
+    deferred = $q.defer()
+    at = $cookies.get('ab_'+config.client_id)
+    rt = $cookies.get('refresh_token')
+    if (!at && rt)
+      update_access_token(rt, config).then (query)->
+        store_access_token($cookies, config, query)
+        deferred.resolve(query.access_token)
+    else if (!at && !rt)
+      deferred.resolve(null)
+
+    deferred.resolve(at) if at
+    deferred.promise
+
+  access_token= -> read_access_token(config)
 
   out = ->
     drop_access_token($cookies, config)
+    drop_refresh_token($cookies, config)
     user_state(config, 'signout', null)
 
   @onError = (query)=>
@@ -149,20 +184,21 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
       callHandler($window, config, this, 'onError', query)
     else if query.access_token
       callHandler($window, config, this, 'onAccessToken', query)
-    else if access_token()
-      @onSession()
-      return
-    else
-      user_state(config, 'anonymous')
-      return
 
-  http = mk_http($http, config, access_token, out)
+    self = @
+    access_token().then (at)->
+      if at
+        self.onSession()
+      else
+        user_state(config, 'anonymous')
+        return
+
+  http = mk_http($http, config, access_token, out, $q)
   @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
-  @signout= -> http(url: '/signout').success (data)-> out()
-  @user = (cb)->
-    http(url: '/user').success((data)-> cb && cb(data))
+  @signout= -> http(url: '/signout').then ()-> out()
+  @user = (cb)-> http(url: '/user').then (data)-> cb && cb(data)
   @fhir = mk_fhir(http, $q)
   @
 
