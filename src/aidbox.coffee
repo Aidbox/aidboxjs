@@ -94,8 +94,7 @@ mk_fhir = (http, $q)->
         url: "/fhir/ValueSet/#{id}/$expand"
         method: 'GET'
         params: {filter: filter}
-      ).then( (data)-> deferred.resolve(data.expansion.contains)
-        , (err)-> deferred.reject(err))
+      ).then( ((data)-> deferred.resolve(data.expansion.contains)) , ((err)-> deferred.reject(err)))
 
       deferred.promise
 
