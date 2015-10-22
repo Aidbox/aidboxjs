@@ -82,6 +82,8 @@ mk_http =($http, config, access_token, out, $q, $window)->
           if st == 403
             out()
             $window.location.href = loginUrl(config)
+          else
+            deferred.reject(err)
       deferred.promise
 
 mk_fhir = (http, $q)->
@@ -92,10 +94,8 @@ mk_fhir = (http, $q)->
         url: "/fhir/ValueSet/#{id}/$expand"
         method: 'GET'
         params: {filter: filter}
-      ).success (data)->
-        deferred.resolve(data.expansion.contains)
-      .error (err)->
-        deferred.reject(err)
+      ).then( (data)-> deferred.resolve(data.expansion.contains)
+        , (err)-> deferred.reject(err))
 
       deferred.promise
 
