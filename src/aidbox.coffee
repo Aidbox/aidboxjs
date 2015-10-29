@@ -69,7 +69,7 @@ mk_http =($http, config, access_token, out, $q, $window)->
     opts.params ||= {}
     access_token().then (token)->
       opts.params.access_token = token if token
-      data = opts.data && JSON.stringify(opts.data)
+      data = opts.data && angular.toJson(opts.data)
       args =
         url: "#{config.box}#{opts.url}"
         params: opts.params
