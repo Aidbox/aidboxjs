@@ -78,7 +78,7 @@ mk_http =($http, config, access_token, out, $q, $window)->
       $http(args)
         .success (data)->
           deferred.resolve data
-        .error (data, st)->
+        .error (err, st)->
           if st == 403
             out()
             $window.location.href = loginUrl(config)
