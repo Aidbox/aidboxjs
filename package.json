@@ -1,13 +1,13 @@
 {
   "name": "angular-aidbox",
   "description": "Aidbox angular service",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "dependencies": {
     "URIjs": "latest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Aidbox/angular-aidbox.git"
+    "url": "git+https://github.com/Aidbox/aidboxjs"
   },
   "devDependencies": {
     "webpack": "latest",

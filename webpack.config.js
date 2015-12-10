@@ -2,7 +2,7 @@ module.exports = {
   entry: "./src/aidbox.coffee",
   output: {
     path: process.env.BUILD_DIR || 'dist',
-    filename: "angular-aidbox.js"
+    filename: "aidbox.js"
   },
   module: {
     loaders: [
