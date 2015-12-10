@@ -1,7 +1,7 @@
 {
   "name": "aidboxjs",
   "description": "Aidbox angular service",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "dependencies": {
     "URIjs": "latest"
   },
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/Aidbox/angular-aidbox",
   "scripts": {
-    "publish": "coffee -o lib/ -c src/ && npm publish",
+    "publish": "npm publish",
     "watch": "webpack --progress --colors --watch",
     "build": "webpack --progress --colors"
   }
