@@ -1,8 +1,11 @@
-sample
+Aidbox JS - angular service
 
 ```sh
- nvm install 0.12
- nvm use 0.12
  npm install
- source config.sh && npm start
+ npm run watch
+```
+
+Before release 
+```sh
+ npm run publish
 ```
