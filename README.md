@@ -1,11 +1,6 @@
-Aidbox JS - angular service
+Aidbox JS - angular service for aidbox projects
 
 ```sh
- npm install
- npm run watch
+ npm install aidboxjs
 ```
 
-Before release 
-```sh
- npm run publish
-```
