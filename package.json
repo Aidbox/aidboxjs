@@ -1,15 +1,14 @@
 {
   "name": "aidboxjs",
   "description": "Aidbox angular service",
-  "version": "0.0.6",
-  "dependencies": {
-    "URIjs": "latest"
-  },
+  "version": "0.0.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Aidbox/aidboxjs"
   },
+  "main" : "./lib/aidbox.js",
   "devDependencies": {
+    "URIjs": "latest",
     "webpack": "latest",
     "coffee": "latest",
     "coffee-loader": "latest"
@@ -20,8 +19,7 @@
   },
   "homepage": "https://github.com/Aidbox/angular-aidbox",
   "scripts": {
-    "publish": "npm publish",
-    "watch": "webpack --progress --colors --watch",
-    "build": "webpack --progress --colors"
+    "watch"  : "webpack --progress --colors --watch",
+    "build"  : "BUILD_DIR=lib webpack --progress --colors"
   }
 }
