@@ -36,10 +36,10 @@ loginUrl = (config)->
 
 store_access_token = ($cookies, config, query)->
   cookie_name = "ab_#{config.client_id}"
-  expires_in = query.expires_in
-  expires_in = expires_in && decodeURIComponent(expires_in)
-  expires_in = (expires_in && addMinutes(new Date(expires_in), -1)) or addMinutes(new Date(), 5)
-  $cookies.put(cookie_name, query.access_token, expires: expires_in)
+  expires_at = query.expires_at
+  expires_at = expires_at && decodeURIComponent(expires_at)
+  expires_at = (expires_at && addMinutes(new Date(expires_at), -1)) or addMinutes(new Date(), 5)
+  $cookies.put(cookie_name, query.access_token, expires: expires_at)
   $cookies.put('refresh_token', query.refresh_token)
 
 
