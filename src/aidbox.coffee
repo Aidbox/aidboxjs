@@ -195,7 +195,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
   @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
-  @signout= -> http(url: '/signout' method: 'POST').then ()-> out()
+  @signout= -> http(url: '/signout', method: 'POST').then ()-> out()
   @user = (cb)-> http(url: '/user').then (data)-> cb && cb(data)
   @fhir = mk_fhir(http, $q)
   @
