@@ -1,6 +1,6 @@
 URI = require('URIjs')
 
-#this is hack to handle location 
+#this is hack to handle location
 #before angular does
 onload = ()->
   query = URI(window.location.search).search(true)
@@ -195,7 +195,7 @@ mod.service '$aidbox', ($http, $cookies, $window, $q)->
   @loginUrl = loginUrl
   @http = http
   @signin = mk_signin($window, config)
-  @signout= -> http(url: '/signout').then ()-> out()
+  @signout= -> http(url: '/signout' method: 'POST').then ()-> out()
   @user = (cb)-> http(url: '/user').then (data)-> cb && cb(data)
   @fhir = mk_fhir(http, $q)
   @
