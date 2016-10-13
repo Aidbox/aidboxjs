@@ -63,20 +63,22 @@ mk_signin= ($window, config)->
       $window.open(loginUrl(config), "SignIn to you Box", window_opts)
       true
 
+
 mk_http =($http, config, access_token, out, $q, $window)->
   (opts)->
     deferred = $q.defer()
     opts.params ||= {}
     access_token().then (token)->
       opts.params.access_token = token if token
-      data = opts.data && angular.toJson(opts.data)
+      data = opts.data
       args =
         url: "#{config.box}#{opts.url}"
         params: opts.params
+        headers: opts.headers
         method: opts.method || 'GET'
-        data: data
+        data: opts.data
       $http(args)
-        .success (data)->
+        .success (data, status, headers)->
           deferred.resolve data
         .error (err, st)->
           if st == 403
