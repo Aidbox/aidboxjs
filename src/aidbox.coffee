@@ -83,7 +83,8 @@ mk_http =($http, config, access_token, out, $q, $window)->
         .error (err, st)->
           if st == 403
             out()
-            $window.location.href = loginUrl(config)
+            $window.location.href = '/'
+            #$window.location.href = loginUrl(config)
           else
             deferred.reject(err)
       deferred.promise
